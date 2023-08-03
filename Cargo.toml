@@ -1,0 +1,12 @@
+[package]
+name = "winapi-kernel32"
+version = "0.1.0"
+authors = ["Michael Graf"]
+publish = false
+
+[dependencies]
+winapi_typedefs = { git = "https://https://github.com/bitminded/rs-winapi-typedefs.git" }
+
+[lib]
+name = "winapi_kernel32"
+path = "src/lib.rs"
