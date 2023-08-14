@@ -5,7 +5,7 @@ authors = ["Michael Graf"]
 publish = false
 
 [dependencies]
-winapi_typedefs = { git = "https://https://github.com/bitminded/rs-winapi-typedefs.git" }
+winapi_typedefs = { git = "https://github.com/bitminded/rs-winapi-typedefs.git" }
 
 [lib]
 name = "winapi_kernel32"
