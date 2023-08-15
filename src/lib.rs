@@ -42,20 +42,82 @@ pub fn get_module_handle_a(lp_module_name: LPCSTR) -> Option<HMODULE>
     }
 }
 
-/// https://msdn.microsoft.com/de-de/library/windows/desktop/ms683199(v=vs.85).aspx
-pub fn get_module_handle_w(lp_module_name: LPCWSTR) -> Option<HMODULE>
+/// Retrieves a module handle for the specified module. The module must have been
+/// loaded by the calling process.
+/// 
+/// # Parameters
+/// ## name
+/// The name of the loaded module (either a .dll or .exe). If the file name
+/// extension is omitted, the default library extension .dll is appended. The file
+/// name string can include a trailing point character (.) to indicate that the
+/// module name has no extension. The string does not have to specify a path.
+/// When specifying a path, be sure to use backslashes (\), not forward slashes (/).
+/// The name is compared (case independently) to the names of modules currently
+/// mapped into the address space of the calling process.
+///
+/// If this parameter is None, a handle to the file used to create the calling
+/// process (.exe) is returned.
+///
+/// Does not retrieve handles for modules that were loaded using the LOAD_LIBRARY_AS_DATAFILE
+/// flag.
+///
+/// # Return value
+/// If the function succeeds, a handle to the specified module is returned.
+///
+/// If the function fails, the return value is None. To get extended error
+/// information, call get_last_error.
+///
+/// # Remarks
+/// The returned handle is not global or inheritable. It cannot be duplicated or
+/// used by another process.
+/// 
+/// If _name_ does not include a path and there is more than one loaded module
+/// with the same base name and extension, you cannot predict which module handle
+/// will be returned. To work around this problem, you could specify a path, use
+/// side-by-side assemblies, or use get_module_handle_ex_w to specify a memory
+/// location rather than a DLL name.
+///
+/// The get_module_function_w function returns a handle to a mapped module without
+/// incrementing its reference count. However, if this handle is passed to the
+/// free_library function, the reference count of the mapped module will be
+/// decremented. Therefore, do not pass a handle returned by get_module_function_w
+/// to the free_library function. Doing so can cause a DLL module to be unmapped
+/// prematurely.
+///
+/// This function must be used carefully in a multithreaded application. There is
+/// no guarantee that the module handle remains valid between the time this function
+/// returns the handle and the time it is used. For example, suppose that a thread
+/// retrieves a module handle, but before it uses the handle, a second thread frees
+/// the module. If the system loads another module, it could reuse the module handle
+/// that was recently freed. Therefore, the first thread would have a handle to a
+/// different module than the one intended.
+pub fn get_module_handle_w(name: Option<&str>) -> Option<HMODULE>
 {
     unsafe
     {
-        let hmodule = GetModuleHandleW(lp_module_name);
-        if hmodule.is_null()
+        let name = match name
+        {
+            None =>
+            {
+                let name: Vec<u16> = vec![0];
+            },
+            Some(name) =>
+            {
+                let mut name: Vec<u16> = name.encode_utf16().collect();
+                name.push(0);
+            }
+        };
+        let name = name.as_ptr();
+        let handle = GetModuleHandleW(name);
+        if handle.is_null()
         {
             return None;
         }
         else
         {
-            return Some(hmodule);
+            return Some(handle);
         }
+
     }
 }
 
