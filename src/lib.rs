@@ -1,3 +1,8 @@
+//! winapi_kernel32 provides bindings for the kernel32 library of the winapi. Most
+//! of the documentation is taken from official sources. The information taken may
+//! have been adjusted slightly to reflect the changes in the safe interfaces that
+//! are required to make the API more easy to work with in Rust.
+
 extern crate winapi_typedefs;
 
 use std::os::raw::c_void;
