@@ -6,9 +6,11 @@
 extern crate winapi_typedefs;
 
 use std::os::raw::c_void;
-use winapi_typedefs::intsafe::*;
-use winapi_typedefs::winnt::*;
-use winapi_typedefs::windef::*;
+use winapi_typedefs::intsafe::cdef::*;
+use winapi_typedefs::winnt::Handle;
+use winapi_typedefs::winnt::cdef::*;
+use winapi_typedefs::windef::Module;
+use winapi_typedefs::windef::cdef::*;
 use std::ffi::CString;
 
 // TODO: Create real definitions for va_list
@@ -96,7 +98,7 @@ pub fn get_module_handle_a(lp_module_name: LPCSTR) -> Option<HMODULE>
 /// the module. If the system loads another module, it could reuse the module handle
 /// that was recently freed. Therefore, the first thread would have a handle to a
 /// different module than the one intended.
-pub fn get_module_handle_w(name: Option<&str>) -> Option<HMODULE>
+pub fn get_module_handle_w(name: Option<&str>) -> Option<Handle<Module>>
 {
     unsafe
     {
@@ -105,14 +107,16 @@ pub fn get_module_handle_w(name: Option<&str>) -> Option<HMODULE>
             None =>
             {
                 let name: Vec<u16> = vec![0];
+                name
             },
             Some(name) =>
             {
                 let mut name: Vec<u16> = name.encode_utf16().collect();
                 name.push(0);
+                name
             }
         };
-        let name = name.as_ptr();
+        let name = name.as_ptr() as *const i16;
         let handle = GetModuleHandleW(name);
         if handle.is_null()
         {
@@ -120,9 +124,8 @@ pub fn get_module_handle_w(name: Option<&str>) -> Option<HMODULE>
         }
         else
         {
-            return Some(handle);
+            return Some(Handle { ptr: std::mem::transmute(handle) });
         }
-
     }
 }
 
